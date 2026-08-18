@@ -55,7 +55,6 @@ export const BmLogoAnimation: React.FC<BmLogoAnimationProps> = ({
         }}
       >
         <Box sx={{ display: 'flex', alignItems: 'center', gap: isHero ? 1 : 0.6 }}>
-          {/* Constant "В" */}
           <Typography
             component={motion.span}
             layout
@@ -71,7 +70,6 @@ export const BmLogoAnimation: React.FC<BmLogoAnimationProps> = ({
             В
           </Typography>
 
-          {/* Animated reveal between "М" and "МИРЕ" */}
           <AnimatePresence mode="wait">
             {!isExpanded ? (
               <motion.span
