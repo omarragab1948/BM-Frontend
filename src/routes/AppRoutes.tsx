@@ -9,6 +9,7 @@ import { ProfileView } from '../features/profile/ProfileView';
 import { PostsView } from '../features/posts/PostsView';
 import { SearchView } from '../features/search/SearchView';
 import { SettingsView } from '../features/settings/SettingsView';
+import { ChatView } from '../features/chat/ChatView';
 
 export const AppRoutes: React.FC = () => {
   return (
@@ -21,8 +22,10 @@ export const AppRoutes: React.FC = () => {
         <Route element={<LayoutShell />}>
           <Route path="/" element={<FeedView />} />
           <Route path="/search" element={<SearchView />} />
+          <Route path="/chat" element={<ChatView />} />
           <Route path="/create" element={<PostsView />} />
           <Route path="/profile" element={<ProfileView />} />
+          <Route path="/profile/:username" element={<ProfileView />} />
           <Route path="/settings" element={<SettingsView />} />
         </Route>
       </Route>
