@@ -1,11 +1,5 @@
-export interface User {
-  id: string;
-  email: string;
-  username: string;
-  avatarUrl?: string;
-  bio?: string;
-  createdAt: string;
-}
+import type { User } from './user';
+export type { User };
 
 export interface RegisterDTO {
   email: string;
@@ -14,7 +8,7 @@ export interface RegisterDTO {
 }
 
 export interface LoginDTO {
-  loginIdentifier: string; 
+  loginIdentifier: string;
   password: string;
 }
 

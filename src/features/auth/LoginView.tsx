@@ -97,7 +97,7 @@ export const LoginView: React.FC = () => {
               lineHeight: 1.25,
             }}
           >
-            Будьте{' '}
+            Be{' '}
             <Box
               component="span"
               sx={{
@@ -107,14 +107,14 @@ export const LoginView: React.FC = () => {
                 fontWeight: 900,
               }}
             >
-              В МИРЕ
+              IN THE WORLD
             </Box>
             <br />
-            ярких моментов и друзей.
+            of bright moments and friends.
           </Typography>
 
           <Typography variant="body2" align="center" sx={{ color: '#a1a1aa', maxWidth: '340px' }}>
-            Социальная сеть ВМ — делитесь фотографиями, общайтесь и оставайтесь на связи.
+            BM social network — share photos, chat and stay connected.
           </Typography>
         </Box>
 
@@ -130,10 +130,10 @@ export const LoginView: React.FC = () => {
         >
           <Box sx={{ mb: 4, textAlign: 'center' }}>
             <Typography variant="h5" sx={{ fontWeight: 700, color: '#f4f4f5', mb: 1 }}>
-              Войти в ВМ
+              Sign in to BM
             </Typography>
             <Typography variant="body2" sx={{ color: '#a1a1aa' }}>
-              Введите данные вашего аккаунта
+              Enter your account credentials
             </Typography>
           </Box>
 
@@ -147,7 +147,7 @@ export const LoginView: React.FC = () => {
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2.5 }}>
               <TextField
                 fullWidth
-                placeholder="Email или Username"
+                placeholder="Email or Username"
                 {...register('loginIdentifier')}
                 error={!!errors.loginIdentifier}
                 helperText={errors.loginIdentifier?.message}
@@ -165,7 +165,7 @@ export const LoginView: React.FC = () => {
               <TextField
                 fullWidth
                 type="password"
-                placeholder="Пароль"
+                placeholder="Password"
                 {...register('password')}
                 error={!!errors.password}
                 helperText={errors.password?.message}
@@ -192,20 +192,20 @@ export const LoginView: React.FC = () => {
                   '&:hover': { bgcolor: '#1877f2' },
                 }}
               >
-                {isLoading ? <CircularProgress size={24} color="inherit" /> : 'Войти'}
+                {isLoading ? <CircularProgress size={24} color="inherit" /> : 'Sign In'}
               </Button>
             </Box>
           </form>
 
           <Divider sx={{ my: 3, borderColor: '#27272a' }}>
             <Typography variant="caption" sx={{ color: '#71717a' }}>
-              ИЛИ
+              OR
             </Typography>
           </Divider>
 
           <Box sx={{ textAlign: 'center' }}>
             <Typography variant="body2" sx={{ color: '#a1a1aa', mb: 2 }}>
-              Еще нет аккаунта?
+              Don't have an account?
             </Typography>
             <Button
               component={RouterLink}
@@ -214,7 +214,7 @@ export const LoginView: React.FC = () => {
               fullWidth
               sx={{ py: 1.2 }}
             >
-              Создать аккаунт
+              Create Account
             </Button>
           </Box>
 
@@ -223,7 +223,7 @@ export const LoginView: React.FC = () => {
             align="center"
             sx={{ color: '#71717a', mt: 4, display: 'block' }}
           >
-            Защищено безопасной сессией Cookies
+            Protected by secure session Cookies
           </Typography>
         </Box>
       </Box>
