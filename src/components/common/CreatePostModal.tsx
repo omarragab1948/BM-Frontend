@@ -1,69 +1,92 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useRef } from 'react';
 import {
-  Box,
-  Typography,
-  Paper,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
   Button,
   TextField,
+  Box,
+  Typography,
   IconButton,
   CircularProgress,
-  Alert,
-  Divider,
+  Paper,
 } from '@mui/material';
-import { PlusSquare, Trash2, Upload, Image as ImageIcon, Video, Layers } from 'lucide-react';
+import { X, Trash2, Upload, Image as ImageIcon, Video } from 'lucide-react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
 import { postService } from '../../services/postService';
 import type { Post, MediaType } from '../../types/post';
-import { PostCard } from '../../components/common/PostCard';
-import { useAuthStore } from '../../store/useAuthStore';
 
-interface MediaInput {
+interface CreatePostModalProps {
+  open: boolean;
+  onClose: () => void;
+  onPostCreated?: (newPost: Post) => void;
+}
+
+interface MediaItemInput {
   file: File;
   url: string;
   type: MediaType;
 }
 
-export const PostsView: React.FC = () => {
-  const navigate = useNavigate();
-  const { user: currentUser } = useAuthStore();
-  const [description, setDescription] = useState('');
-  const [mediaList, setMediaList] = useState<MediaInput[]>([]);
+const createPostSchema = z.object({
+  description: z.string().optional(),
+  mediaList: z
+    .array(
+      z.object({
+        file: z.instanceof(File),
+        url: z.string(),
+        type: z.enum(['IMAGE', 'VIDEO']),
+      })
+    )
+    .min(1, 'Please select at least one image or video from your device'),
+});
+
+type CreatePostFormData = z.infer<typeof createPostSchema>;
+
+export const CreatePostModal: React.FC<CreatePostModalProps> = ({ open, onClose, onPostCreated }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
-  const [myPosts, setMyPosts] = useState<Post[]>([]);
-  const [loadingPosts, setLoadingPosts] = useState(true);
+  const {
+    register,
+    handleSubmit,
+    setValue,
+    watch,
+    reset,
+    formState: { errors },
+  } = useForm<CreatePostFormData>({
+    resolver: zodResolver(createPostSchema),
+    defaultValues: {
+      description: '',
+      mediaList: [],
+    },
+  });
 
-  useEffect(() => {
-    if (currentUser?.username) {
-      loadMyPosts(currentUser.username);
-    }
-  }, [currentUser]);
-
-  const loadMyPosts = async (username: string) => {
-    setLoadingPosts(true);
-    try {
-      const res = await postService.getUserPosts(username);
-      setMyPosts(res.data);
-    } catch {
-    } finally {
-      setLoadingPosts(false);
-    }
-  };
+  const mediaList = watch('mediaList') || [];
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files || files.length === 0) return;
 
-    Array.from(files).forEach((file) => {
+    const fileArray = Array.from(files);
+    const newItems: MediaItemInput[] = [];
+    let loadedCount = 0;
+
+    fileArray.forEach((file) => {
       const type: MediaType = file.type.startsWith('video') ? 'VIDEO' : 'IMAGE';
       const reader = new FileReader();
       reader.onload = (event) => {
         const url = event.target?.result as string;
         if (url) {
-          setMediaList((prev) => [...prev, { file, url, type }]);
+          newItems.push({ file, url, type });
+        }
+        loadedCount++;
+        if (loadedCount === fileArray.length) {
+          setValue('mediaList', [...mediaList, ...newItems], { shouldValidate: true });
         }
       };
       reader.readAsDataURL(file);
@@ -73,30 +96,22 @@ export const PostsView: React.FC = () => {
   };
 
   const handleRemoveMedia = (index: number) => {
-    setMediaList((prev) => prev.filter((_, i) => i !== index));
+    const updated = mediaList.filter((_, i) => i !== index);
+    setValue('mediaList', updated, { shouldValidate: true });
   };
 
-  const handleCreatePost = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (mediaList.length === 0) {
-      setError('Please select at least one image or video from your device');
-      return;
-    }
-
+  const onSubmit = async (data: CreatePostFormData) => {
     setLoading(true);
     setError(null);
-    setSuccess(null);
 
     try {
       const created = await postService.createPost({
-        description,
-        files: mediaList.map((m) => m.file),
+        description: data.description || '',
+        files: data.mediaList.map((m) => m.file),
       });
-      setMyPosts((prev) => [created, ...prev]);
-      setSuccess('Post created successfully!');
-      setDescription('');
-      setMediaList([]);
-      navigate('/');
+      onPostCreated?.(created);
+      onClose();
+      reset();
     } catch (err: any) {
       setError(err.message || 'Error creating post');
     } finally {
@@ -104,37 +119,56 @@ export const PostsView: React.FC = () => {
     }
   };
 
-  const handlePostDeleted = (id: string) => {
-    setMyPosts((prev) => prev.filter((p) => p.id !== id));
-  };
-
-  const handlePostUpdated = (updated: Post) => {
-    setMyPosts((prev) => prev.map((p) => (p.id === updated.id ? updated : p)));
-  };
-
   return (
-    <Box sx={{ maxWidth: '640px', mx: 'auto', py: 3 }}>
-      <Typography variant="h5" sx={{ color: '#f4f4f5', fontWeight: 700, mb: 3 }}>
-        Manage Posts
-      </Typography>
-
-      <Paper sx={{ p: 3, bgcolor: '#18181b', border: '1px solid #27272a', borderRadius: 3, mb: 4 }}>
-        <Typography variant="h6" sx={{ color: '#f4f4f5', fontWeight: 600, mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
-          <PlusSquare size={20} color="#0095f6" /> Create New Post
+    <Dialog
+      open={open}
+      onClose={onClose}
+      fullWidth
+      maxWidth="sm"
+      slotProps={{
+        paper: {
+          sx: {
+            bgcolor: '#18181b',
+            color: '#f4f4f5',
+            borderRadius: 3,
+            border: '1px solid #27272a',
+          },
+        },
+      }}
+    >
+      <DialogTitle sx={{ m: 0, p: 2, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '1.1rem' }}>
+          Create New Post
         </Typography>
+        <IconButton onClick={onClose} size="small" sx={{ color: '#a1a1aa' }}>
+          <X size={20} />
+        </IconButton>
+      </DialogTitle>
 
-        {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
-        {success && <Alert severity="success" sx={{ mb: 2 }}>{success}</Alert>}
+      <Box component="form" onSubmit={handleSubmit(onSubmit)}>
+        <DialogContent dividers sx={{ borderColor: '#27272a', py: 2 }}>
+          {error && (
+            <Typography variant="body2" sx={{ color: '#ef4444', mb: 2 }}>
+              {error}
+            </Typography>
+          )}
+          {errors.mediaList?.message && (
+            <Typography variant="body2" sx={{ color: '#ef4444', mb: 2 }}>
+              {errors.mediaList.message}
+            </Typography>
+          )}
 
-        <Box component="form" onSubmit={handleCreatePost}>
+          <Typography variant="subtitle2" sx={{ color: '#f4f4f5', fontWeight: 600, mb: 1 }}>
+            Post Caption
+          </Typography>
           <TextField
             fullWidth
             multiline
             rows={3}
-            label="Post Caption"
-            placeholder="What's new? Tell your friends..."
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
+            placeholder="Write a caption..."
+            {...register('description')}
+            error={Boolean(errors.description)}
+            helperText={errors.description?.message}
             sx={{ mb: 3 }}
           />
 
@@ -170,7 +204,6 @@ export const PostsView: React.FC = () => {
                 p: 4,
                 textAlign: 'center',
                 cursor: 'pointer',
-                mb: 3,
                 transition: 'border-color 0.2s, background-color 0.2s',
                 '&:hover': { borderColor: '#0095f6', bgcolor: 'rgba(0, 149, 246, 0.05)' },
               }}
@@ -184,7 +217,7 @@ export const PostsView: React.FC = () => {
               </Typography>
             </Box>
           ) : (
-            <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(110px, 1fr))', gap: 1.5, mb: 3 }}>
+            <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(110px, 1fr))', gap: 1.5, mb: 2 }}>
               {mediaList.map((item, index) => (
                 <Paper
                   key={index}
@@ -226,44 +259,23 @@ export const PostsView: React.FC = () => {
               ))}
             </Box>
           )}
+        </DialogContent>
 
+        <DialogActions sx={{ p: 2 }}>
+          <Button onClick={onClose} sx={{ color: '#a1a1aa' }}>
+            Cancel
+          </Button>
           <Button
             type="submit"
             variant="contained"
-            fullWidth
             disabled={loading || mediaList.length === 0}
-            startIcon={loading ? <CircularProgress size={18} color="inherit" /> : <PlusSquare size={18} />}
-            sx={{ bgcolor: '#0095f6', color: '#fff', py: 1.2, textTransform: 'none', fontWeight: 600, '&:hover': { bgcolor: '#1877f2' } }}
+            startIcon={loading ? <CircularProgress size={16} color="inherit" /> : null}
+            sx={{ bgcolor: '#0095f6', color: '#fff', '&:hover': { bgcolor: '#1877f2' } }}
           >
-            Publish Post
+            Share
           </Button>
-        </Box>
-      </Paper>
-
-      <Divider sx={{ mb: 4, borderColor: '#27272a' }} />
-
-      <Typography variant="h6" sx={{ color: '#f4f4f5', fontWeight: 600, mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
-        <Layers size={20} color="#0095f6" /> Your Posts
-      </Typography>
-
-      {loadingPosts ? (
-        <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
-          <CircularProgress size={30} sx={{ color: '#0095f6' }} />
-        </Box>
-      ) : myPosts.length === 0 ? (
-        <Typography variant="body2" sx={{ color: '#71717a', textAlign: 'center', py: 4 }}>
-          You don't have any posts yet.
-        </Typography>
-      ) : (
-        myPosts.map((post) => (
-          <PostCard
-            key={post.id}
-            post={post}
-            onPostUpdated={handlePostUpdated}
-            onPostDeleted={handlePostDeleted}
-          />
-        ))
-      )}
-    </Box>
+        </DialogActions>
+      </Box>
+    </Dialog>
   );
 };
