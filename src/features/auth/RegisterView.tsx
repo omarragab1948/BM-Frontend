@@ -73,7 +73,6 @@ export const RegisterView: React.FC = () => {
           boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 10px 10px -5px rgba(0, 0, 0, 0.4)',
         }}
       >
-        {/* Top Back Link */}
         <Box sx={{ mb: 3 }}>
           <Button
             component={RouterLink}
@@ -81,20 +80,19 @@ export const RegisterView: React.FC = () => {
             startIcon={<ArrowLeft size={18} />}
             sx={{ color: '#a1a1aa', pl: 0, '&:hover': { color: '#f4f4f5', bgcolor: 'transparent' } }}
           >
-            Назад к входу
+            Back to sign in
           </Button>
         </Box>
 
-        {/* Brand Header with Animated ВМ Logo */}
         <Box sx={{ textAlign: 'center', mb: 4 }}>
           <Box sx={{ display: 'inline-block', mb: 2 }}>
             <BmLogoAnimation variant="header" autoPlay />
           </Box>
           <Typography variant="h5" sx={{ fontWeight: 700, color: '#f4f4f5', mb: 1 }}>
-            Регистрация в ВМ
+            Sign up for BM
           </Typography>
           <Typography variant="body2" sx={{ color: '#a1a1aa' }}>
-            Зарегистрируйтесь, чтобы смотреть фото и видео ваших друзей.
+            Sign up to see photos and videos from your friends.
           </Typography>
         </Box>
 
@@ -106,10 +104,9 @@ export const RegisterView: React.FC = () => {
 
         <form onSubmit={handleSubmit(onSubmit)} noValidate>
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2.5 }}>
-            {/* Email Field */}
             <Box>
               <Typography variant="body2" sx={{ color: '#f4f4f5', fontWeight: 600, mb: 0.8 }}>
-                Электронная почта (Email)
+                Email Address
               </Typography>
               <TextField
                 fullWidth
@@ -129,10 +126,9 @@ export const RegisterView: React.FC = () => {
               />
             </Box>
 
-            {/* Username Field */}
             <Box>
               <Typography variant="body2" sx={{ color: '#f4f4f5', fontWeight: 600, mb: 0.8 }}>
-                Имя пользователя (Username)
+                Username
               </Typography>
               <TextField
                 fullWidth
@@ -152,15 +148,14 @@ export const RegisterView: React.FC = () => {
               />
             </Box>
 
-            {/* Password Field */}
             <Box>
               <Typography variant="body2" sx={{ color: '#f4f4f5', fontWeight: 600, mb: 0.8 }}>
-                Пароль (Password)
+                Password
               </Typography>
               <TextField
                 fullWidth
                 type="password"
-                placeholder="Придумайте надежный пароль"
+                placeholder="Create a strong password"
                 {...register('password')}
                 error={!!errors.password}
                 helperText={errors.password?.message}
@@ -189,7 +184,7 @@ export const RegisterView: React.FC = () => {
                 '&:hover': { bgcolor: '#1877f2' },
               }}
             >
-              {isLoading ? <CircularProgress size={24} color="inherit" /> : 'Зарегистрироваться'}
+              {isLoading ? <CircularProgress size={24} color="inherit" /> : 'Sign Up'}
             </Button>
           </Box>
         </form>
@@ -198,7 +193,7 @@ export const RegisterView: React.FC = () => {
 
         <Box sx={{ textAlign: 'center' }}>
           <Typography variant="body2" sx={{ color: '#a1a1aa', mb: 1.5 }}>
-            Уже есть аккаунт?
+            Already have an account?
           </Typography>
           <Button
             component={RouterLink}
@@ -207,7 +202,7 @@ export const RegisterView: React.FC = () => {
             fullWidth
             sx={{ py: 1.2 }}
           >
-            У меня уже есть аккаунт
+            I already have an account
           </Button>
         </Box>
       </Paper>
